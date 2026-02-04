@@ -132,6 +132,4 @@ Thực hành xây dựng REST API với FastAPI
 
 Sử dụng Alembic để quản lý migration
 
-Xây dựng cấu trúc project backend rõ ràng
-
 Làm nền tảng cho các dự án backend thực tế
