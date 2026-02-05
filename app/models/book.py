@@ -13,14 +13,13 @@ class Book(Base):
     published_year = Column(Integer, nullable=False)
 
     author_id = Column(Integer, ForeignKey("authors.id", ondelete="RESTRICT"), nullable=False)
-    category_id = Column(Integer, ForeignKey("categories.id", ondelete="RETRICT"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id", ondelete="RESTRICT"), nullable=False)
 
-    cover_image = Column(String(255), nullable=True) #Save path, example: "static/covers/zzz.jpg"
+    cover_image = Column(String(255), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-    #Relationship n-1 with Author, Category
-    books = relationship("Author", back_populates="books")
-    books = relationship("Category", back_populates="books")
-
+    # relationships
+    author = relationship("Author", back_populates="books")
+    category = relationship("Category", back_populates="books")
