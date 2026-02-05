@@ -11,7 +11,7 @@ API sử dụng **SQLAlchemy ORM** để thao tác cơ sở dữ liệu và **Al
 
 ## 🚀 Công nghệ sử dụng
 
-- **Python 3.9+**
+- **Python 3.9.0 or 3.9.+**
 - **FastAPI** – Framework xây dựng API hiệu năng cao
 - **SQLAlchemy** – ORM cho Python
 - **Alembic** – Database migration tool
