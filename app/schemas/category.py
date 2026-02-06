@@ -2,24 +2,20 @@ from typing import Optional
 from pydantic import BaseModel
 
 class CategoryBase(BaseModel):
-    name:str
+    id: int
+    name: str
     description: Optional[str] = None
 
-class CategoryCreate(CategoryBase):
-    """Schema for create category"""
-    pass
+    class Config:
+        orm_mode = True
+
+class CategoryCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
 
 class CategoryUpdate(BaseModel):
-    """Schema for update category"""
     name: Optional[str] = None
     description: Optional[str] = None
 
-class CategoryInDBBase(CategoryBase):
-    id: int
-
-    class Config:
-        from_attributes = True #Pydantic read from SQLAlchemy model
-
-class Category(CategoryInDBBase):
-    """Schema return for client"""
+class Category(CategoryBase):
     pass

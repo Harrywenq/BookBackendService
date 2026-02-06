@@ -5,16 +5,16 @@ from sqlalchemy import or_
 
 from app.api.deps import get_db
 from app import models
-from app.schemas.book import Book, BookCreate, BookUpdate
+from app.schemas.book import BookCreate, BookUpdate, BookResponse
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Book])
+@router.get("/", response_model=List[BookResponse])
 def list_books(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    Book_id: Optional[int] = Query(None),
+    author_id: Optional[int] = Query(None),
     category_id: Optional[int] = Query(None),
     year: Optional[int] = Query(None),
     keyword: Optional[str] = Query(None),
@@ -29,8 +29,8 @@ def list_books(
     """
     mb = models.Book
     query = db.query(models.Book)
-    if Book_id is not None:
-        query = query.filter(mb.Book_id == Book_id)
+    if author_id is not None:
+        query = query.filter(mb.author_id == author_id)
     if category_id is not None:
         query = query.filter(mb.category_id == category_id)
     if year is not None:
@@ -46,7 +46,7 @@ def list_books(
     books = query.offset(skip).limit(limit).all()
     return books
 
-@router.get("/{book_id}", response_model=Book)
+@router.get("/{book_id}", response_model=BookResponse)
 def get_book(
     book_id: int,
     db: Session = Depends(get_db)
@@ -63,14 +63,11 @@ def get_book(
     
     return book
 
-@router.post("/", response_model=Book, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=BookResponse, status_code=status.HTTP_201_CREATED)
 def create_book(
     book_in: BookCreate,
     db: Session = Depends(get_db)
 ):
-    """
-    Create new book. check unique name
-    """
     author = db.query(models.Author).filter(models.Author.id == book_in.author_id).first()
 
     if not author:
@@ -86,16 +83,21 @@ def create_book(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Category does not exists",
         )
-    # đến đây r, 33:22
     
-    book = models.Book(name = book_in.name, bio = book_in.bio)
+    book = models.Book(
+        title = book_in.title,
+        description = book_in.description,
+        published_year = book_in.published_year,
+        author_id = book_in.author_id,
+        category_id = book_in.category_id,
+        )
     db.add(book)
     db.commit()
     db.refresh(book)
 
     return book
 
-@router.put("/{book_id}", response_model=Book)
+@router.put("/{book_id}", response_model=BookResponse)
 def update_book(
     book_id: int,
     book_up: BookUpdate,
@@ -103,6 +105,7 @@ def update_book(
 ):
     """
     Update book
+    - Allow update author_id/category_id, but must check exist
     """
     book = db.query(models.Book).filter(models.Book.id == book_id).first()
 
@@ -112,20 +115,37 @@ def update_book(
             detail="Book not found",
         )
     
-    if book_up.name is not None and book_up.name != book.name:
-        existing = db.query(models.Book).filter(models.Book.name == book_up.name).first()
+    if book_up.title is not None:
+        book.title = book_up.title
+    if book_up.description is not None:
+        book.description = book_up.description
+    if book_up.title is not None:
+        book.title = book_up.title
+    if book_up.published_year is not None:
+        book.published_year = book_up.published_year
 
-    if existing:
+    #if update author_id
+    if book_up.author_id is not None and book_up.author_id != book.author_id:
+        author = db.query(models.Author).filter(models.Author.id == book_up.author_id).first()
+
+    if not author:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Another book with this name already exists",
+            detail="New author does not exists",
         )
-    book.name = book_up.name
+    book.author_id = book_up.author_id
 
-    if book_up.bio is not None:
-        book.bio = book_up.bio
+    #if update category_id
+    if book_up.category_id is not None and book_up.category_id != book.category_id:
+        category = db.query(models.Category).filter(models.Category.id == book_up.category_id).first()
+
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New category does not exists",
+        )
+    book.category_id = book_up.category_id
     
-    db.add(book)
     db.commit()
     db.refresh(book)
 

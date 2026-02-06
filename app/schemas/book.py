@@ -13,18 +13,16 @@ class BookBase(BaseModel):
     author_id: int
 
 class BookCreate(BookBase):
-    """Schema for create book"""
     pass
 
 class BookUpdate(BaseModel):
-    """Schema for update book"""
     title: Optional[str] = None
     description: Optional[str] = None
     published_year: Optional[int] = None
     category_id: Optional[int] = None
     author_id: Optional[int] = None
 
-class BookInDBBase(BookBase):
+class BookResponse(BaseModel):
     id: int
     title: str
     description: str
@@ -33,14 +31,11 @@ class BookInDBBase(BookBase):
     author_id: int
     cover_image: Optional[str] = None
     created_at: datetime
-    update_at: datetime
-
-    class Config:
-        from_attributes = True #Pydantic read from SQLAlchemy model
-
-#Schema nested for author and category
-
-class Book(BookInDBBase):
-    """Schema return for client"""
+    updated_at: datetime
     author: Author
     category: Category
+
+    class Config:
+        orm_mode = True
+
+
