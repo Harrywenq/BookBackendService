@@ -18,7 +18,7 @@ class AuthorInDBBase(AuthorBase):
     id: int
 
     class Config:
-        orm_mode = True #Pydantic read from SQLAlchemy model
+        from_attributes = True #Pydantic read from SQLAlchemy model
 
 class Author(AuthorInDBBase):
     """Schema return for client"""
